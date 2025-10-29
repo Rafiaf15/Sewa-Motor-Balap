@@ -165,19 +165,34 @@
                                     <button class="btn btn-secondary">Terapkan</button>
                                 </div>
 
-                                <button class="btn btn-checkout">
-                                    <i class="fas fa-credit-card me-2"></i>Lanjut ke Pembayaran
-                                </button>
-
-                                <div class="payment-methods">
-                                    <p class="payment-label">Metode Pembayaran:</p>
-                                    <div class="payment-icons">
-                                        <i class="fab fa-cc-visa"></i>
-                                        <i class="fab fa-cc-mastercard"></i>
-                                        <i class="fas fa-money-bill-wave"></i>
-                                        <i class="fas fa-university"></i>
+                                <form method="POST" action="{{ route('pembayaran.pay') }}" class="mt-3">
+                                    @csrf
+                                    <div class="mb-2">
+                                        <p class="payment-label mb-2">Metode Pembayaran</p>
+                                        <div class="list-group">
+                                            <label class="list-group-item d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="payment_method" value="va_mandiri" checked>
+                                                <span>Mandiri Virtual Account</span>
+                                            </label>
+                                            <label class="list-group-item d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="payment_method" value="va_bca">
+                                                <span>BCA Virtual Account</span>
+                                            </label>
+                                            <label class="list-group-item d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="payment_method" value="retail_alfamart">
+                                                <span>Alfamart / Alfamidi / Lawson / Dan+Dan</span>
+                                            </label>
+                                            <label class="list-group-item d-flex align-items-center gap-2">
+                                                <input class="form-check-input" type="radio" name="payment_method" value="va_bri">
+                                                <span>BRI Virtual Account</span>
+                                            </label>
+                                        </div>
                                     </div>
-                                </div>
+
+                                    <button type="submit" class="btn btn-checkout w-100">
+                                        <i class="fas fa-credit-card me-2"></i>Lanjut ke Pembayaran
+                                    </button>
+                                </form>
 
                                 <div class="secure-badge">
                                     <i class="fas fa-shield-alt"></i>
@@ -220,17 +235,41 @@
 
         function removeItem(key) {
             if (confirm('Hapus item dari keranjang?')) {
-                // AJAX call to remove item
-                console.log('Remove item:', key);
-                // You'll need to implement the backend route for this
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("cart.remove") }}';
+                
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = '{{ csrf_token() }}';
+                form.appendChild(csrf);
+                
+                const keyInput = document.createElement('input');
+                keyInput.type = 'hidden';
+                keyInput.name = 'key';
+                keyInput.value = key;
+                form.appendChild(keyInput);
+                
+                document.body.appendChild(form);
+                form.submit();
             }
         }
 
         function clearCart() {
             if (confirm('Kosongkan seluruh keranjang?')) {
-                // AJAX call to clear cart
-                console.log('Clear cart');
-                // You'll need to implement the backend route for this
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("cart.clear") }}';
+                
+                const csrf = document.createElement('input');
+                csrf.type = 'hidden';
+                csrf.name = '_token';
+                csrf.value = '{{ csrf_token() }}';
+                form.appendChild(csrf);
+                
+                document.body.appendChild(form);
+                form.submit();
             }
         }
     </script>

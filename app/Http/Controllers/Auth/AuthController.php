@@ -24,7 +24,25 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
-            return redirect()->intended('/dashboard');
+
+            // Load persisted cart into session after successful login
+            $userId = Auth::id();
+            if ($userId) {
+                $cartModel = \App\Models\Cart::where('user_id', $userId)->first();
+                if ($cartModel && is_array($cartModel->data)) {
+                    $sessionCart = $request->session()->get('cart', []);
+                    $merged = array_merge($sessionCart, $cartModel->data ?? []);
+                    $request->session()->put('cart', $merged);
+                }
+            }
+
+            // Admin: direct redirect to admin dashboard (ignore intended)
+            if (auth()->user() && auth()->user()->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            }
+
+            // User: honor intended URL falling back to user dashboard
+            return redirect()->intended(route('dashboard'));
         }
 
         return back()->withErrors([

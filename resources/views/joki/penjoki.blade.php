@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @push('styles')
-    <link rel="stylesheet" href="{{ asset('css/catalog.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/product.css') }}">
 @endpush
 
 @section('content')
@@ -23,6 +23,19 @@
     <section class="filter-section">
         <div class="container">
             <div class="filter-card">
+                <!-- Search Form -->
+                <div class="search-form mb-3">
+                    <form action="{{ route('joki.search') }}" method="GET" class="d-flex gap-2">
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <input type="text" name="search" class="form-control" placeholder="Cari joki..." value="{{ request('search') }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Cari</button>
+                    </form>
+                </div>
+
                 <div class="filter-header">
                     <i class="fas fa-filter me-2"></i>
                     <span>Filter Kategori:</span>
@@ -57,7 +70,7 @@
                     <i class="fas fa-users me-2"></i>
                     Menampilkan: {{ $categoryLabel }}
                 </h2>
-                <p class="section-subtitle">{{ $jokis->count() }} joki tersedia</p>
+                <p class="section-subtitle">{{ $jokis->count() }} joki ditemukan</p>
             </div>
 
             <div class="row g-4">
@@ -66,15 +79,19 @@
                         <div class="product-card joki-card">
                             <div class="product-badge">
                                 <span class="badge badge-{{ $joki->category }}">{{ ucfirst($joki->category) }}</span>
-                                <span class="badge badge-verified">
-                                    <i class="fas fa-check-circle"></i> Verified
+                                <span class="badge {{ $joki->available ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ $joki->available ? 'Tersedia' : 'Tidak Tersedia' }}
                                 </span>
                             </div>
                             
-                            <div class="product-image joki-image">
-                                <img src="{{ asset($joki->photo) }}" alt="{{ $joki->name }}">
+                            <div class="product-image">
+                                @if($joki->image)
+                                    <img src="{{ asset($joki->image) }}" alt="{{ $joki->name }}" class="img-fluid" onerror="this.src='https://via.placeholder.com/600x400?text={{ urlencode($joki->name) }}'">
+                                @else
+                                    <img src="https://via.placeholder.com/600x400?text={{ urlencode($joki->name) }}" alt="{{ $joki->name }}" class="img-fluid">
+                                @endif
                                 <div class="product-overlay">
-                                    <button class="btn-quick-view">
+                                    <button class="btn-quick-view" data-bs-toggle="modal" data-bs-target="#jokiModal{{ $joki->id }}">
                                         <i class="fas fa-user me-2"></i>Lihat Profile
                                     </button>
                                 </div>
@@ -92,51 +109,52 @@
 
                                 <h3 class="product-title">{{ $joki->name }}</h3>
                                 
-                                <div class="joki-bio">
-                                    <p>{{ $joki->bio }}</p>
+                                <div class="product-description">
+                                    <p>{{ $joki->description }}</p>
                                 </div>
 
                                 <div class="product-price">
                                     <span class="price-label">Tarif Sewa</span>
-                                    <span class="price-value">Rp {{ number_format($joki->price_per_hour, 0, ',', '.') }}</span>
-                                    <span class="price-period">/day</span>
+                                    <span class="price-value">Rp {{ number_format($joki->price_per_day, 0, ',', '.') }}</span>
+                                    <span class="price-period">/hari</span>
                                 </div>
 
-                                <div class="product-actions">
+                                <div class="product-actions d-flex gap-2">
                                     @if($joki->available)
-                                        {{-- Sewa Joki: add to cart and redirect to keranjang. Guests will be redirected to login. --}}
+                                        {{-- Add to cart form --}}
                                         <form method="POST" action="{{ route('cart.add') }}" class="d-inline-block">
                                             @csrf
                                             <input type="hidden" name="id" value="{{ $joki->id }}">
                                             <input type="hidden" name="type" value="joki">
                                             <input type="hidden" name="name" value="{{ $joki->name }}">
-                                            <input type="hidden" name="price" value="{{ $joki->price_per_hour }}">
+                                            <input type="hidden" name="price" value="{{ $joki->price_per_day }}">
+                                            <input type="hidden" name="qty" value="1">
+                                            <button type="submit" class="btn btn-outline-primary btn-cart" title="Tambah ke keranjang">
+                                                <i class="fas fa-shopping-cart"></i>
+                                            </button>
+                                        </form>
+
+                                        {{-- Sewa Sekarang --}}
+                                        <form method="POST" action="{{ route('cart.add') }}" class="d-inline-block flex-grow-1">
+                                            @csrf
+                                            <input type="hidden" name="id" value="{{ $joki->id }}">
+                                            <input type="hidden" name="type" value="joki">
+                                            <input type="hidden" name="name" value="{{ $joki->name }}">
+                                            <input type="hidden" name="price" value="{{ $joki->price_per_day }}">
                                             <input type="hidden" name="qty" value="1">
                                             <input type="hidden" name="redirect" value="keranjang">
-                                            <button type="submit" class="btn btn-primary btn-rent">
+                                            <button type="submit" class="btn btn-primary w-100">
                                                 <i class="fas fa-handshake me-2"></i>Sewa Joki
                                             </button>
                                         </form>
                                     @else
-                                        <button class="btn btn-secondary" disabled>
+                                        <button class="btn btn-secondary w-100" disabled>
                                             <i class="fas fa-ban me-2"></i>Tidak Tersedia
                                         </button>
                                     @endif
 
-                                    {{-- Add to cart form for joki --}}
-                                    <form method="POST" action="{{ route('cart.add') }}" class="d-inline-block ms-2">
-                                        @csrf
-                                        <input type="hidden" name="id" value="{{ $joki->id }}">
-                                        <input type="hidden" name="type" value="joki">
-                                        <input type="hidden" name="name" value="{{ $joki->name }}">
-                                        <input type="hidden" name="price" value="{{ $joki->price_per_hour }}">
-                                        <input type="hidden" name="qty" value="1">
-                                        <button type="submit" class="btn btn-outline-success btn-cart" title="Tambah ke keranjang">
-                                            <i class="fas fa-shopping-cart"></i>
-                                        </button>
-                                    </form>
-
-                                    <button class="btn btn-outline-primary btn-wishlist ms-2">
+                                    {{-- Wishlist button --}}
+                                    <button class="btn btn-outline-danger btn-wishlist">
                                         <i class="far fa-bookmark"></i>
                                     </button>
                                 </div>
@@ -147,20 +165,4 @@
             </div>
         </div>
     </section>
-
-    <!-- CTA Section -->
-    <section class="cta-section-small">
-        <div class="container">
-            <div class="cta-card">
-                <div class="cta-content">
-                    <h3>Butuh Motor Balap Juga?</h3>
-                    <p>Paket lengkap: Motor Balap + Joki Profesional</p>
-                </div>
-                <a href="{{ route('motor.motorbalap') }}" class="btn btn-light">
-                    <i class="fas fa-motorcycle me-2"></i>Lihat Motor Balap
-                </a>
-            </div>
-        </div>
-    </section>
-
 @endsection

@@ -19,7 +19,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Revert back to original enum (may fail if values outside original set exist)
-        DB::statement("ALTER TABLE motors MODIFY category ENUM('pemula','menengah','expert') NOT NULL DEFAULT 'pemula'");
+        // Keep VARCHAR on rollback to avoid truncation errors for existing values
+        DB::statement("ALTER TABLE motors MODIFY category VARCHAR(255) NOT NULL DEFAULT 'pemula'");
     }
 };

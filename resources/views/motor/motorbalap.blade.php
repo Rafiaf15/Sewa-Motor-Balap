@@ -75,7 +75,7 @@
                     <i class="fas fa-motorcycle me-2"></i>
                     Menampilkan: {{ $categoryLabel }}
                 </h2>
-                <p class="section-subtitle">{{ $motors->count() }} motor tersedia</p>
+                <p class="section-subtitle">{{ $motors->count() }} motor ditemukan</p>
             </div>
 
             <div class="row g-4">
@@ -93,6 +93,9 @@
                                     }
                                 @endphp
                                 <span class="badge badge-{{ $motor->category }}">{{ $label }}</span>
+                                <span class="badge {{ $motor->available ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ $motor->available ? 'Tersedia' : 'Tidak Tersedia' }}
+                                </span>
                             </div>
                             
                             <div class="product-image">

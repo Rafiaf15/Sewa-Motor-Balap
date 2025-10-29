@@ -28,6 +28,18 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        // Load persisted cart (if any) into session after successful login
+        $userId = auth()->id();
+        if ($userId) {
+            $cartModel = \App\Models\Cart::where('user_id', $userId)->first();
+            if ($cartModel && is_array($cartModel->data)) {
+                // If there is an existing session cart, merge with DB cart (DB wins on conflicts)
+                $sessionCart = $request->session()->get('cart', []);
+                $merged = array_merge($sessionCart, $cartModel->data ?? []);
+                $request->session()->put('cart', $merged);
+            }
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

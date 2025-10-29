@@ -5,17 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Joki extends Model
+class Cart extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'slug',
-        'category',
-        'description',
-        'price_per_day',
-        'available',
-        'image',
+        'user_id',
+        'data',
+    ];
+
+    protected $casts = [
+        'data' => 'array',
     ];
 }
+
+

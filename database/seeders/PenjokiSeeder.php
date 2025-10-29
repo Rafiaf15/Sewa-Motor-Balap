@@ -14,38 +14,50 @@ class PenjokiSeeder extends Seeder
             [
                 'name' => 'Alex Marquez',
                 'category' => 'expert',
-                'bio' => 'Joki professional dengan pengalaman 10 tahun di sirkuit internasional',
+                'description' => 'Joki professional dengan pengalaman 10 tahun di sirkuit internasional',
                 'price_per_day' => 1000000,
                 'available' => true,
-                'photo' => 'jokis/alex.jpg'
+                'image' => 'build/assets/image/Jokis/Alex.jpg'
             ],
             [
                 'name' => 'Dani Pedrosa',
                 'category' => 'menengah',
-                'bio' => 'Joki berpengalaman 5 tahun di berbagai sirkuit nasional',
+                'description' => 'Joki berpengalaman 5 tahun di berbagai sirkuit nasional',
                 'price_per_day' => 750000,
                 'available' => true,
-                'photo' => 'jokis/dani.jpg'
+                'image' => 'build/assets/image/Jokis/Dani.jpg'
             ],
             [
                 'name' => 'Marc Marquez',
                 'category' => 'pemula',
-                'bio' => 'Joki muda berbakat dengan pengalaman 2 tahun di sirkuit lokal',
+                'description' => 'Joki muda berbakat dengan pengalaman 2 tahun di sirkuit lokal',
                 'price_per_day' => 500000,
                 'available' => true,
-                'photo' => 'jokis/marc.jpg'
+                'image' => 'build/assets/image/Jokis/marc.jpg'
+            ],
+            [
+                'name' => 'Am Rayong',
+                'category' => 'expert',
+                'description' => 'Joki muda berbakat dengan pengalaman 5 tahun di balap drag',
+                'price_per_day' => 550000,
+                'available' => true,
+                'image' => 'build/assets/image/Jokis/rayong.jpg'
             ],
         ];
 
+        // Hapus data yang ada terlebih dahulu
+        Joki::truncate();
+
         foreach ($jokis as $joki) {
+            $slug = Str::slug($joki['name']);
             Joki::create([
                 'name' => $joki['name'],
-                'slug' => Str::slug($joki['name']),
+                'slug' => $slug,
                 'category' => $joki['category'],
-                'bio' => $joki['bio'],
-                'price_per_hour' => $joki['price_per_hour'],
+                'description' => $joki['description'],
+                'price_per_day' => $joki['price_per_day'],
                 'available' => $joki['available'],
-                'photo' => $joki['photo']
+                'image' => $joki['image']
             ]);
         }
     }

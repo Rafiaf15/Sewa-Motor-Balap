@@ -9,14 +9,14 @@ class MotorController extends Controller
 {
     public function index()
     {
-        $motors = Motor::where('available', true)->get();
+        $motors = Motor::orderBy('name')->get();
         return view('motor.motorbalap', compact('motors'));
     }
 
     public function category($category)
     {
         $motors = Motor::where('category', $category)
-                      ->where('available', true)
+                      ->orderBy('name')
                       ->get();
         return view('motor.motorbalap', compact('motors', 'category'));
     }
@@ -24,7 +24,7 @@ class MotorController extends Controller
     public function normalVariant($variant)
     {
         $motors = Motor::where('category', 'normal-' . $variant)
-                      ->where('available', true)
+                      ->orderBy('name')
                       ->get();
         return view('motor.motorbalap', [
             'motors' => $motors,
@@ -37,12 +37,12 @@ class MotorController extends Controller
     {
         $search = $request->input('search');
         
-        $motors = Motor::where('available', true)
-                      ->where(function($query) use ($search) {
+        $motors = Motor::where(function($query) use ($search) {
                           $query->where('name', 'like', "%{$search}%")
                                 ->orWhere('description', 'like', "%{$search}%")
                                 ->orWhere('unit_code', 'like', "%{$search}%");
                       })
+                      ->orderBy('name')
                       ->get();
 
         return view('motor.motorbalap', [

@@ -26,6 +26,9 @@ class User extends Authenticatable
         'ktp',
         'address',
         'avatar',
+        'ktp_photo',
+        'simc_photo',
+        'kyc_verified_at',
     ];
 
     /**
@@ -47,6 +50,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'kyc_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
     }

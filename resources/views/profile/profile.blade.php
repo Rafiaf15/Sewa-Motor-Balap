@@ -1,54 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
+<div class="container py-4">
     <div class="row">
-        <!-- Sidebar Profile -->
         <div class="col-lg-3">
             <div class="card shadow-sm mb-4">
                 <div class="card-body text-center">
-                    <div class="profile-image mb-3">
-                        @if(Auth::user()->avatar)
-                            <img src="{{ asset(Auth::user()->avatar) }}" class="rounded-circle" width="100" height="100" alt="Profile Image">
-                        @else
-                            <div class="default-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 100px; height: 100px; margin: 0 auto; font-size: 2.5rem;">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
-                            </div>
-                        @endif
-                    </div>
-                    <h5 class="card-title mb-0">{{ Auth::user()->name }}</h5>
-                    <p class="text-muted small">Member since {{ Auth::user()->created_at->format('M Y') }}</p>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="#profile-info" class="list-group-item list-group-item-action active">
-                        <i class="fas fa-user me-2"></i> Informasi Profil
-                    </a>
-                    <a href="#rental-history" class="list-group-item list-group-item-action">
-                        <i class="fas fa-history me-2"></i> Riwayat Sewa
-                    </a>
-                    <a href="#documents" class="list-group-item list-group-item-action">
-                        <i class="fas fa-file-alt me-2"></i> Dokumen Saya
-                    </a>
-                    <a href="#preferences" class="list-group-item list-group-item-action">
-                        <i class="fas fa-cog me-2"></i> Pengaturan
-                    </a>
-                </div>
-            </div>
-
-            <!-- Membership Status -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-body">
-                    <h6 class="card-title text-muted mb-3">Status Membership</h6>
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-crown text-warning me-2 fa-2x"></i>
-                        <div>
-                            <h6 class="mb-0">Regular Member</h6>
-                            <small class="text-muted">5 sewa lagi menuju Gold</small>
-                        </div>
-                    </div>
-                    <div class="progress mt-3" style="height: 5px;">
-                        <div class="progress-bar bg-warning" role="progressbar" style="width: 50%"></div>
-                    </div>
+                    <img class="rounded-circle mb-2" src="{{ $user->avatar ? asset($user->avatar) : 'https://via.placeholder.com/120x120?text=Avatar' }}" width="120" height="120" alt="Avatar">
+                    <div class="text-muted">{{ $user->email }}</div>
                 </div>
             </div>
         </div>
@@ -58,9 +17,15 @@
             <!-- Profile Information -->
             <div class="card shadow-sm mb-4" id="profile-info">
                 <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Informasi Profil</h5>
+                    <h5 class="card-title mb-0">Informasi Profil & Verifikasi</h5>
                 </div>
                 <div class="card-body">
+                    @if(session('success'))
+                        <div class="alert alert-success">{{ session('success') }}</div>
+                    @endif
+                    @if(session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
                     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
@@ -90,177 +55,90 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Foto Profil (avatar)</label>
-                            <input type="file" name="avatar" class="form-control">
+                            <input type="file" name="avatar" class="form-control" accept="image/png,image/jpeg">
+                            <small class="text-muted">Hanya JPG/PNG</small>
                         </div>
-                        <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+
+                        <hr>
+                        <h6 class="mb-3">Verifikasi Identitas</h6>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Foto KTP</label>
+                                <input type="file" name="ktp_photo" class="form-control" accept="image/png,image/jpeg">
+                                @if($user->ktp_photo)
+                                    <div class="mt-2 d-flex align-items-center gap-2">
+                                        <img src="{{ asset($user->ktp_photo) }}" alt="KTP" class="img-thumbnail" style="max-height: 140px;">
+                                        <form method="POST" action="{{ route('profile.kyc.ktp.delete') }}">
+                                            @csrf
+                                            <button class="btn btn-outline-danger" onclick="return confirm('Hapus foto KTP? Verifikasi akan dicabut.')">Hapus</button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Foto SIM C</label>
+                                <input type="file" name="simc_photo" class="form-control" accept="image/png,image/jpeg">
+                                @if($user->simc_photo)
+                                    <div class="mt-2 d-flex align-items-center gap-2">
+                                        <img src="{{ asset($user->simc_photo) }}" alt="SIM C" class="img-thumbnail" style="max-height: 140px;">
+                                        <form method="POST" action="{{ route('profile.kyc.simc.delete') }}">
+                                            @csrf
+                                            <button class="btn btn-outline-danger" onclick="return confirm('Hapus foto SIM C? Verifikasi akan dicabut.')">Hapus</button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <small class="text-muted">Hanya JPG/PNG. Wajib unggah foto KTP & SIM C yang jelas sebelum melakukan penyewaan.</small>
+                        </div>
+
+                        <button class="btn btn-primary">Simpan Perubahan</button>
                     </form>
                 </div>
             </div>
 
-            <!-- Rental History -->
-            <div class="card shadow-sm mb-4" id="rental-history">
-                <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                    <h5 class="card-title mb-0">Riwayat Sewa</h5>
-                    <div class="btn-group">
-                        <button class="btn btn-outline-primary btn-sm">Semua</button>
-                        <button class="btn btn-outline-primary btn-sm">Aktif</button>
-                        <button class="btn btn-outline-primary btn-sm">Selesai</button>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="timeline">
-                        <!-- Example rental history items -->
-                        <div class="rental-item mb-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1">Honda CBR250RR</h6>
-                                    <p class="text-muted mb-0 small">
-                                        <i class="fas fa-calendar me-1"></i> 25 Oct 2025 - 27 Oct 2025
-                                        <span class="badge bg-success ms-2">Selesai</span>
-                                    </p>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="mb-1">Rp 1.500.000</h6>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Detail</a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="rental-item mb-4">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-1">Yamaha R6</h6>
-                                    <p class="text-muted mb-0 small">
-                                        <i class="fas fa-calendar me-1"></i> 20 Oct 2025 - 22 Oct 2025
-                                        <span class="badge bg-success ms-2">Selesai</span>
-                                    </p>
-                                </div>
-                                <div class="text-end">
-                                    <h6 class="mb-1">Rp 1.350.000</h6>
-                                    <a href="#" class="btn btn-sm btn-outline-primary">Detail</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Documents -->
-            <div class="card shadow-sm mb-4" id="documents">
+            <!-- Riwayat Penyewaan -->
+            <div class="card shadow-sm">
                 <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Dokumen Saya</h5>
+                    <h5 class="card-title mb-0">Riwayat Penyewaan Saya</h5>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <div class="document-item p-3 border rounded">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">KTP</h6>
-                                        <p class="text-muted mb-0 small">Format: JPG, PNG, PDF (Max 2MB)</p>
-                                    </div>
-                                    <button class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-upload"></i> Upload
-                                    </button>
-                                </div>
-                            </div>
+                    @if(($orders ?? collect())->isEmpty())
+                        <div class="text-muted">Belum ada riwayat penyewaan.</div>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Kode</th>
+                                        <th>Item</th>
+                                        <th>Tipe</th>
+                                        <th>Harga</th>
+                                        <th>Status</th>
+                                        <th>Mulai</th>
+                                        <th>Selesai</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($orders as $o)
+                                        <tr>
+                                            <td>{{ $o->order_code }}</td>
+                                            <td>{{ $o->item_name }}</td>
+                                            <td>{{ strtoupper($o->item_type) }}</td>
+                                            <td>{{ number_format($o->total_amount,0,',','.') }}</td>
+                                            <td>{{ strtoupper($o->status) }}</td>
+                                            <td>{{ optional($o->start_date)->format('Y-m-d') }}</td>
+                                            <td>{{ optional($o->end_date)->format('Y-m-d') }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <div class="document-item p-3 border rounded">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h6 class="mb-1">SIM</h6>
-                                        <p class="text-muted mb-0 small">Format: JPG, PNG, PDF (Max 2MB)</p>
-                                    </div>
-                                    <button class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-upload"></i> Upload
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Preferences -->
-            <div class="card shadow-sm mb-4" id="preferences">
-                <div class="card-header bg-white">
-                    <h5 class="card-title mb-0">Pengaturan</h5>
-                </div>
-                <div class="card-body">
-                    <h6 class="mb-3">Notifikasi</h6>
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="emailNotif" checked>
-                            <label class="form-check-label" for="emailNotif">Email Notifikasi</label>
-                        </div>
-                        <small class="text-muted">Terima email untuk pembaruan status sewa dan promo</small>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="whatsappNotif" checked>
-                            <label class="form-check-label" for="whatsappNotif">WhatsApp Notifikasi</label>
-                        </div>
-                        <small class="text-muted">Terima notifikasi WhatsApp untuk pembaruan status sewa</small>
-                    </div>
-                    
-                    <hr>
-                    
-                    <h6 class="mb-3">Keamanan</h6>
-                    <div class="mb-3">
-                        <button class="btn btn-outline-primary">
-                            <i class="fas fa-lock me-2"></i>Ubah Password
-                        </button>
-                    </div>
-                    <div class="mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="twoFactor">
-                            <label class="form-check-label" for="twoFactor">Verifikasi 2 Langkah</label>
-                        </div>
-                        <small class="text-muted">Tingkatkan keamanan akun dengan verifikasi tambahan</small>
-                    </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
 @endsection
-
-@push('styles')
-<style>
-.rental-item {
-    border-left: 3px solid #2ed573;
-    padding-left: 15px;
-}
-
-.rental-item:hover {
-    background-color: #f8f9fa;
-}
-
-.default-avatar {
-    font-family: Arial, sans-serif;
-}
-
-.document-item {
-    transition: all 0.3s;
-}
-
-.document-item:hover {
-    background-color: #f8f9fa;
-}
-
-.timeline {
-    position: relative;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: -20px;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: #e9ecef;
-}
-</style>
-@endpush
