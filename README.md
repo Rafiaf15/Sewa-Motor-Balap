@@ -5,8 +5,7 @@ Kelompok 5
 
 ## 🧑‍💻 Nama Team
 Rafi Abdul Fatah  
-[Anggota 2]  
-[Anggota 3]  
+Muhammad Akbar
 
 ## 📦 Nama Project
 **Sewa Motor Balap & Joki – Sistem Penyewaan Motor Balap dan Jasa Joki Berbasis Web**
