@@ -1,61 +1,80 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🏍️ README – Project Sewa Motor Balap & Joki
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+## 👥 Nama Kelompok
+Kelompok 5
 
-## About Laravel
+## 🧑‍💻 Nama Team
+Rafi Abdul Fatah  
+[Anggota 2]  
+[Anggota 3]  
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 📦 Nama Project
+**Sewa Motor Balap & Joki – Sistem Penyewaan Motor Balap dan Jasa Joki Berbasis Web**
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🧩 List Fitur
+1. **Autentikasi Login & Register**
+   - Terdapat 2 jenis akun: **Admin** dan **User (Anggota)**  
+   - User harus login untuk dapat mengakses fitur sewa
 
-## Learning Laravel
+2. **Manajemen Data**
+   - Admin dapat menambah, mengubah, dan menghapus data **motor balap**, **joki**, dan **kategori motor**
+   - User dapat mengedit profilnya sendiri
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+3. **Sewa Motor dan Joki**
+   - User dapat menyewa motor balap dan memilih joki jika diperlukan
+   - User dapat menyewa **maksimal 2 unit** motor dalam satu waktu
+   - Durasi sewa maksimal **5 hari**, lebih dari itu dikenakan **denda otomatis**
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+4. **Manajemen Joki**
+   - Admin dapat menambah dan mengatur ketersediaan joki
+   - Joki yang sedang bertugas tidak bisa disewa bersamaan oleh user lain
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+5. **Laporan & Riwayat**
+   - Admin dapat melihat dan mencetak laporan penyewaan
+   - User dapat melihat riwayat sewa dan status pengembalian
 
-## Laravel Sponsors
+6. **Pencarian & Filter**
+   - User dapat mencari motor berdasarkan **nama**, **kategori**, atau **status**
+   - Filter juga tersedia untuk menampilkan motor yang sedang tersedia saja
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+7. **Validasi Data**
+   - Semua form penting diberi validasi (`required`, format email, batas pinjaman, dsb)
+   - Sistem otomatis menghitung **denda** jika melewati batas waktu sewa
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 🗃️ Skema Database (ERD)
+Berikut adalah relasi utama antar tabel dalam sistem:
 
-## Contributing
+![ERD Database Sewa Motor Balap](public/images/erd-sewa-motor-balap.png)
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Tabel Utama:**
+- `users` → menyimpan data user dan admin  
+- `categories` → menyimpan kategori motor (Matic, Sport, Drag, Superbike, dll)  
+- `units` → menyimpan data motor balap  
+- `jokis` → menyimpan data joki yang bisa disewa  
+- `loans` → menyimpan transaksi penyewaan (motor + joki)
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## 🎥 Demo Project
+Screen recorder demo penjelasan website dapat dilihat di link berikut:
 
-## Security Vulnerabilities
+🔗 **[Lihat Video Demo di Google Drive](https://drive.google.com/drive/folders/xxxxx)**  
+*(Gantilah dengan link video demo project kamu di Google Drive atau YouTube)*
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+---
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## ⚙️ Cara Menjalankan Project (Menggunakan XAMPP)
+1. Pastikan **XAMPP** sudah aktif (Apache & MySQL).
+2. Ekstrak project ke dalam folder `htdocs`.
+3. Buka terminal / cmd, arahkan ke folder project.
+4. Jalankan perintah berikut:
+   ```bash
+   composer install
+   copy .env.example .env
+   php artisan key:generate
+   php artisan migrate --seed
+   php artisan serve
