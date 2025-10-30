@@ -103,10 +103,10 @@ Route::middleware('auth')->group(function () {
                 'redirect' => ['nullable', 'string'],
             ]);
 
-            // Check availability from DB to prevent renting unavailable items
+            // Check stock from DB to prevent renting unavailable items
             if ($data['type'] === 'motor') {
                 $motor = \App\Models\Motor::find($data['id']);
-                if (!$motor || !$motor->available) {
+                if (!$motor || $motor->stock <= 0) {
                     return back()->with('error', 'Unit motor tidak tersedia untuk disewa.');
                 }
             } elseif ($data['type'] === 'joki') {

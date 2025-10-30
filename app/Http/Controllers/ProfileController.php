@@ -47,18 +47,21 @@ class ProfileController extends Controller
         ]);
 
         if ($request->hasFile('avatar')) {
-            $path = $request->file('avatar')->store('public/avatars');
-            $data['avatar'] = Storage::url($path);
+            $filename = time() . '_' . $request->file('avatar')->getClientOriginalName();
+            $path = $request->file('avatar')->move(public_path('avatars'), $filename);
+            $data['avatar'] = 'avatars/' . $filename;
         }
 
         if ($request->hasFile('ktp_photo')) {
-            $path = $request->file('ktp_photo')->store('public/kyc');
-            $data['ktp_photo'] = Storage::url($path);
+            $filename = time() . '_' . $request->file('ktp_photo')->getClientOriginalName();
+            $path = $request->file('ktp_photo')->move(public_path('kyc'), $filename);
+            $data['ktp_photo'] = 'kyc/' . $filename;
         }
 
         if ($request->hasFile('simc_photo')) {
-            $path = $request->file('simc_photo')->store('public/kyc');
-            $data['simc_photo'] = Storage::url($path);
+            $filename = time() . '_' . $request->file('simc_photo')->getClientOriginalName();
+            $path = $request->file('simc_photo')->move(public_path('kyc'), $filename);
+            $data['simc_photo'] = 'kyc/' . $filename;
         }
 
         $user->fill($data);
@@ -93,11 +96,20 @@ class ProfileController extends Controller
 
     private function deleteStorageFileByUrl(string $url): void
     {
-        $path = parse_url($url, PHP_URL_PATH) ?? '';
-        // Convert /storage/... to public/... for Storage disk
-        if (str_starts_with($path, '/storage/')) {
-            $storagePath = 'public/' . ltrim(substr($path, strlen('/storage/')), '/');
-            Storage::delete($storagePath);
+        // For public path, just delete the file directly
+        if (str_starts_with($url, 'avatars/') || str_starts_with($url, 'kyc/')) {
+            $filePath = public_path($url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        } else {
+            // Fallback for old storage links
+            $path = parse_url($url, PHP_URL_PATH) ?? '';
+            // Convert /storage/... to public/... for Storage disk
+            if (str_starts_with($path, '/storage/')) {
+                $storagePath = 'public/' . ltrim(substr($path, strlen('/storage/')), '/');
+                Storage::delete($storagePath);
+            }
         }
     }
 }

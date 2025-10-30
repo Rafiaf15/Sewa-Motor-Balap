@@ -93,6 +93,7 @@ class MotorSeeder extends Seeder
                     'description' => $motor['description'],
                     'price_per_day' => $motor['price_per_day'],
                     'available' => $motor['available'],
+                    'stock' => 5,
                     'image' => $motor['image']
                 ]
             );

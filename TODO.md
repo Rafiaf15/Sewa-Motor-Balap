@@ -1,0 +1,5 @@
+- [x] Change quantity-control to duration-control in cart-item-actions
+- [x] Update labels to "Durasi Sewa (hari)" and set input min=1, max=10
+- [x] Modify subtotal calculation to include fine if duration >5
+- [x] Display fine in cart-item-subtotal section
+- [x] Update cart summary to include total fines across items

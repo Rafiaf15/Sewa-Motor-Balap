@@ -114,14 +114,14 @@ class CheckoutController extends Controller
                 'end_date' => now()->addDays(7), // Default 7 hari sewa
             ]);
 
-            // Set item availability to false when rented
+            // Decrease stock when rented
             if (($item['type'] ?? null) === 'motor') {
                 if ($motor = \App\Models\Motor::find($item['id'])) {
-                    $motor->update(['available' => false]);
+                    $motor->decrement('stock', $item['qty'] ?? 1);
                 }
             } elseif (($item['type'] ?? null) === 'joki') {
                 if ($joki = \App\Models\Joki::find($item['id'])) {
-                    $joki->update(['available' => false]);
+                    $joki->decrement('available', $item['qty'] ?? 1); // Assuming joki has available field
                 }
             }
         }
