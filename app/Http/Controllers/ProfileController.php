@@ -162,6 +162,20 @@ class ProfileController extends Controller
                 $storagePath = 'public/' . ltrim(substr($path, strlen('/storage/')), '/');
                 Storage::delete($storagePath);
             }
+        // For public path, just delete the file directly
+        if (str_starts_with($url, 'avatars/') || str_starts_with($url, 'kyc/')) {
+            $filePath = public_path($url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
+            }
+        } else {
+            // Fallback for old storage links
+            $path = parse_url($url, PHP_URL_PATH) ?? '';
+            // Convert /storage/... to public/... for Storage disk
+            if (str_starts_with($path, '/storage/')) {
+                $storagePath = 'public/' . ltrim(substr($path, strlen('/storage/')), '/');
+                Storage::delete($storagePath);
+            }
         }
     }
 }
