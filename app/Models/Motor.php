@@ -16,6 +16,7 @@ class Motor extends Model
         'description',
         'price_per_day',
         'available',
+        'stock',
         'image',
     ];
 }

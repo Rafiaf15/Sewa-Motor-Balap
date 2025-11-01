@@ -20,6 +20,11 @@
                             {{ $payment['instructions'] }}
                         </div>
 
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Peringatan Denda:</strong> Jika motor dikembalikan setelah masa sewa berakhir, akan dikenakan denda Rp 50.000 per hari keterlambatan.
+                        </div>
+
                         <form method="POST" action="{{ route('pembayaran.complete') }}" class="mt-3 d-flex gap-2">
                             @csrf
                             <button type="submit" class="btn btn-success">

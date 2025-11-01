@@ -50,17 +50,38 @@ class UserAdminController extends Controller
             'name' => ['required','string','max:255'],
             'email' => ['required','email','max:255','unique:users,email,' . $user->id],
             'password' => ['nullable','string','min:8'],
+            'phone' => ['nullable','string','regex:/^[0-9+\-\s()]+$/','min:10','max:12'],
+            'ktp' => ['nullable','string','regex:/^[0-9]+$/','size:16'],
+            'address' => ['nullable','string','max:1000'],
             'role' => ['required','in:user,admin'],
+        ], [
+            'phone.regex' => 'No. Telepon hanya boleh berisi angka, spasi, tanda plus, minus, dan tanda kurung.',
+            'ktp.regex' => 'No. KTP hanya boleh berisi angka.',
         ]);
 
         $update = [
             'name' => $data['name'],
             'email' => $data['email'],
+            'phone' => $data['phone'],
+            'ktp' => $data['ktp'],
+            'address' => $data['address'],
             'role' => $data['role'],
         ];
         if (!empty($data['password'])) {
             $update['password'] = Hash::make($data['password']);
         }
+
+        // Validate that required fields are not empty
+        if (empty($update['phone'])) {
+            return back()->withErrors(['phone' => 'No. Telepon wajib diisi.'])->withInput();
+        }
+        if (empty($update['ktp'])) {
+            return back()->withErrors(['ktp' => 'No. KTP wajib diisi.'])->withInput();
+        }
+        if (empty($update['address'])) {
+            return back()->withErrors(['address' => 'Alamat wajib diisi.'])->withInput();
+        }
+
         $user->update($update);
 
         return redirect()->route('admin.users.index')->with('success','User diperbarui.');

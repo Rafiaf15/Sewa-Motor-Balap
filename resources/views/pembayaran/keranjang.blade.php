@@ -58,11 +58,18 @@
                     <div class="row g-4">
                         <div class="col-lg-8">
                             <div class="cart-items-container">
-                                @php $total = 0; @endphp
+                                @php $total = 0; $totalFine = 0; @endphp
                                 @foreach($cart as $key => $item)
                                     @php
-                                        $subtotal = ($item['price'] ?? 0) * ($item['qty'] ?? 1);
-                                        $total += $subtotal;
+                                        $duration = $item['qty'] ?? 1;
+                                        $basePrice = ($item['price'] ?? 0) * $duration;
+                                        $fine = 0;
+                                        if ($duration > 5) {
+                                            $fine = 2 * ($item['price'] ?? 0) * ($duration - 5);
+                                        }
+                                        $subtotal = $basePrice + $fine;
+                                        $total += $basePrice;
+                                        $totalFine += $fine;
                                     @endphp
                                     <div class="cart-item">
                                         <div class="cart-item-image">
@@ -90,24 +97,37 @@
                                         </div>
 
                                         <div class="cart-item-actions">
-                                            <div class="quantity-control">
-                                                <button class="qty-btn" onclick="updateQty('{{ $key }}', -1)">
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                                <input type="number" class="qty-input" value="{{ $item['qty'] ?? 1 }}" min="1" readonly>
-                                                <button class="qty-btn" onclick="updateQty('{{ $key }}', 1)">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
+                                            <div class="duration-control">
+                                                <label class="form-label">Durasi Sewa (hari)</label>
+                                                <input type="number" class="form-control" value="{{ $item['qty'] ?? 1 }}" min="1" max="10" onchange="updateDuration('{{ $key }}', this.value)">
+                                                @if(($item['qty'] ?? 1) > 5)
+                                                    <small class="text-danger">Maksimal 5 hari, denda 2x untuk hari tambahan</small>
+                                                @endif
                                             </div>
 
                                             <div class="cart-item-price">
                                                 <span class="price-label">Harga Satuan</span>
-                                                <span class="price-value">Rp {{ number_format($item['price'] ?? 0, 0, ',', '.') }}</span>
+                                                <span class="price-value">Rp {{ number_format($item['price'] ?? 0, 0, ',', '.') }}/hari</span>
                                             </div>
 
                                             <div class="cart-item-subtotal">
+                                                @php
+                                                    $duration = $item['qty'] ?? 1;
+                                                    $basePrice = ($item['price'] ?? 0) * $duration;
+                                                    $fine = 0;
+                                                    if ($duration > 5) {
+                                                        $fine = 2 * ($item['price'] ?? 0) * ($duration - 5);
+                                                    }
+                                                    $totalPrice = $basePrice + $fine;
+                                                @endphp
                                                 <span class="subtotal-label">Subtotal</span>
-                                                <span class="subtotal-value">Rp {{ number_format($subtotal, 0, ',', '.') }}</span>
+                                                <span class="subtotal-value">Rp {{ number_format($basePrice, 0, ',', '.') }}</span>
+                                                @if($fine > 0)
+                                                    <span class="subtotal-label">Denda</span>
+                                                    <span class="subtotal-value text-danger">Rp {{ number_format($fine, 0, ',', '.') }}</span>
+                                                @endif
+                                                <span class="subtotal-label fw-bold">Total</span>
+                                                <span class="subtotal-value fw-bold">Rp {{ number_format($totalPrice, 0, ',', '.') }}</span>
                                             </div>
 
                                             <button class="btn-remove" onclick="removeItem('{{ $key }}')">
@@ -141,7 +161,14 @@
                                         <span>Subtotal ({{ count($cart) }} item)</span>
                                         <span>Rp {{ number_format($total, 0, ',', '.') }}</span>
                                     </div>
-                                    
+
+                                    @if($totalFine > 0)
+                                    <div class="summary-row">
+                                        <span>Total Denda</span>
+                                        <span class="text-danger">Rp {{ number_format($totalFine, 0, ',', '.') }}</span>
+                                    </div>
+                                    @endif
+
                                     <div class="summary-row">
                                         <span>Biaya Admin</span>
                                         <span>Rp 5.000</span>
@@ -156,7 +183,7 @@
 
                                     <div class="summary-row summary-total">
                                         <span>Total Pembayaran</span>
-                                        <span>Rp {{ number_format($total + 5000 + ($total * 0.01), 0, ',', '.') }}</span>
+                                        <span>Rp {{ number_format($total + $totalFine + 5000 + ($total * 0.01), 0, ',', '.') }}</span>
                                     </div>
                                 </div>
 
@@ -227,10 +254,12 @@
 
 @push('scripts')
     <script>
-        function updateQty(key, change) {
-            // AJAX call to update quantity
-            console.log('Update qty for item:', key, 'by:', change);
+        function updateDuration(key, value) {
+            // AJAX call to update duration
+            console.log('Update duration for item:', key, 'to:', value);
             // You'll need to implement the backend route for this
+            // For now, just reload the page to recalculate
+            location.reload();
         }
 
         function removeItem(key) {
@@ -238,19 +267,19 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '{{ route("cart.remove") }}';
-                
+
                 const csrf = document.createElement('input');
                 csrf.type = 'hidden';
                 csrf.name = '_token';
                 csrf.value = '{{ csrf_token() }}';
                 form.appendChild(csrf);
-                
+
                 const keyInput = document.createElement('input');
                 keyInput.type = 'hidden';
                 keyInput.name = 'key';
                 keyInput.value = key;
                 form.appendChild(keyInput);
-                
+
                 document.body.appendChild(form);
                 form.submit();
             }
@@ -261,13 +290,13 @@
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '{{ route("cart.clear") }}';
-                
+
                 const csrf = document.createElement('input');
                 csrf.type = 'hidden';
                 csrf.name = '_token';
                 csrf.value = '{{ csrf_token() }}';
                 form.appendChild(csrf);
-                
+
                 document.body.appendChild(form);
                 form.submit();
             }

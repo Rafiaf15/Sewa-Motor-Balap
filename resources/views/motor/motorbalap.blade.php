@@ -93,8 +93,8 @@
                                     }
                                 @endphp
                                 <span class="badge badge-{{ $motor->category }}">{{ $label }}</span>
-                                <span class="badge {{ $motor->available ? 'bg-success' : 'bg-secondary' }}">
-                                    {{ $motor->available ? 'Tersedia' : 'Tidak Tersedia' }}
+                                <span class="badge {{ $motor->stock > 0 ? 'bg-success' : 'bg-secondary' }}">
+                                    Stok: {{ $motor->stock }}
                                 </span>
                             </div>
                             
@@ -130,7 +130,7 @@
                                 </div>
 
                                 <div class="product-actions d-flex gap-2">
-                                    @if($motor->available)
+                                    @if($motor->stock > 0)
                                         {{-- Add to cart form --}}
                                         <form method="POST" action="{{ route('cart.add') }}" class="d-inline-block">
                                             @csrf
@@ -159,7 +159,7 @@
                                         </form>
                                     @else
                                         <button class="btn btn-secondary w-100" disabled>
-                                            <i class="fas fa-ban me-2"></i>Tidak Tersedia
+                                            <i class="fas fa-ban me-2"></i>Stok Habis
                                         </button>
                                     @endif
 

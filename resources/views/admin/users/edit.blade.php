@@ -21,6 +21,18 @@
             <input type="password" name="password" class="form-control">
         </div>
         <div class="mb-3">
+            <label class="form-label">No. Telepon <span class="text-danger">*</span></label>
+            <input type="tel" name="phone" class="form-control" value="{{ old('phone', $user->phone) }}" pattern="[0-9+\-\s()]+" title="Hanya angka, spasi, tanda plus, minus, dan kurung yang diperbolehkan (10-12 digit)" minlength="10" maxlength="12">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">No. KTP <span class="text-danger">*</span></label>
+            <input type="text" name="ktp" class="form-control" value="{{ old('ktp', $user->ktp) }}" pattern="[0-9]+" title="Hanya angka yang diperbolehkan (16 digit)" minlength="16" maxlength="16">
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Alamat <span class="text-danger">*</span></label>
+            <textarea name="address" class="form-control" rows="3">{{ old('address', $user->address) }}</textarea>
+        </div>
+        <div class="mb-3">
             <label class="form-label">Role</label>
             <select name="role" class="form-select" required>
                 <option value="user" @if($user->role==='user') selected @endif>User</option>

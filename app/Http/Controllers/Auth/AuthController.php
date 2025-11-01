@@ -25,6 +25,16 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
 
+            $user = Auth::user();
+            
+            // Check if email is verified (skip for admin users)
+            if ($user->role !== 'admin' && !$user->hasVerifiedEmail()) {
+                Auth::logout();
+                return back()->withErrors([
+                    'email' => 'Please verify your email address before logging in.',
+                ]);
+            }
+
             // Load persisted cart into session after successful login
             $userId = Auth::id();
             if ($userId) {
@@ -77,14 +87,19 @@ class AuthController extends Controller
             ]
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => 'user', // default role
+            'avatar' => null,
         ]);
+    
+        // Send verification email and redirect to verification notice
+        // DO NOT auto-login the user
+        $user->sendEmailVerificationNotification();
 
-        return redirect('/login');
+        return redirect()->route('verification.notice');
     }
 
     public function logout(Request $request)

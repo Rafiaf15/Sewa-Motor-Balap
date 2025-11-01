@@ -27,16 +27,16 @@ class RentalAdminController extends Controller
             return back()->with('error', 'Order tidak dalam status aktif.');
         }
 
-        // mark item available again
+        // increase stock when returned
         if ($order->item_type === 'motor') {
             $item = Motor::find($order->item_id);
             if ($item) {
-                $item->update(['available' => true]);
+                $item->increment('stock', $order->quantity);
             }
         } elseif ($order->item_type === 'joki') {
             $item = Joki::find($order->item_id);
             if ($item) {
-                $item->update(['available' => true]);
+                $item->increment('available', $order->quantity); // Assuming joki has available field
             }
         }
 

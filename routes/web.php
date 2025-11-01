@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\JokiController;
 use App\Http\Controllers\CheckoutController;
@@ -35,9 +36,63 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
+// Email Verification Routes
+// Verification notice can be accessed without auth (user just registered)
+Route::get('/email/verify', function () {
+    // If user is logged in and already verified, redirect to dashboard
+    if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
+        return redirect()->route('dashboard')->with('success', 'Email Anda sudah terverifikasi.');
+    }
+    // If user is logged in but not verified, show notice
+    // If user is not logged in, also show notice (they just registered)
+    return view('auth.verify-email');
+})->name('verification.notice');
+
+// Resend verification email requires auth
+Route::middleware('auth')->group(function () {
+    Route::post('/email/verification-notification', function (\Illuminate\Http\Request $request) {
+        $user = $request->user();
+        
+        // Only allow resend if email is not verified
+        if ($user->hasVerifiedEmail()) {
+            return back()->with('error', 'Email Anda sudah terverifikasi.');
+        }
+        
+        $user->sendEmailVerificationNotification();
+        return back()->with('resent', true);
+    })
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+});
+
+// Verification link can be accessed without auth (user clicks from email)
+Route::get('/email/verify/{id}/{hash}', function (\Illuminate\Http\Request $request, $id, $hash) {
+    $user = \App\Models\User::findOrFail($id);
+
+    if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        abort(403, 'Invalid verification link.');
+    }
+
+    if ($user->hasVerifiedEmail()) {
+        // User already verified, redirect to login
+        return redirect()->route('login')->with('success', 'Email sudah diverifikasi sebelumnya. Silakan login dengan akun Anda.');
+    }
+
+    // Mark email as verified
+    if ($user->markEmailAsVerified()) {
+        // Refresh user model to ensure changes are saved
+        $user->refresh();
+    }
+
+    // DO NOT auto-login - user must login manually
+    return redirect()->route('login')->with('success', 'Email berhasil diverifikasi! Silakan login dengan akun Anda.');
+})
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    
+
     // User routes
     Route::get('/dashboard', function () {
         if (auth()->user() && auth()->user()->role === 'admin') {
@@ -49,6 +104,7 @@ Route::middleware('auth')->group(function () {
     // Profile routes (edit & update)
     Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile');
     Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::post('/profile/kyc/ktp/delete', [\App\Http\Controllers\ProfileController::class, 'deleteKtp'])->name('profile.kyc.ktp.delete');
     Route::post('/profile/kyc/simc/delete', [\App\Http\Controllers\ProfileController::class, 'deleteSimc'])->name('profile.kyc.simc.delete');
 
@@ -64,7 +120,7 @@ Route::middleware('auth')->group(function () {
         if (isset($cart[$key])) {
             unset($cart[$key]);
             session()->put('cart', $cart);
-            
+
             // Update DB cart if authenticated
             if (auth()->check()) {
                 \App\Models\Cart::updateOrCreate(
@@ -75,10 +131,10 @@ Route::middleware('auth')->group(function () {
         }
         return back()->with('success', 'Item dihapus dari keranjang.');
     })->name('cart.remove');
-    
+
     Route::post('/cart/clear', function (\Illuminate\Http\Request $request) {
         session()->forget('cart');
-        
+
         // Clear DB cart if authenticated
         if (auth()->check()) {
             \App\Models\Cart::where('user_id', auth()->id())->delete();
@@ -103,10 +159,10 @@ Route::middleware('auth')->group(function () {
                 'redirect' => ['nullable', 'string'],
             ]);
 
-            // Check availability from DB to prevent renting unavailable items
+            // Check stock from DB to prevent renting unavailable items
             if ($data['type'] === 'motor') {
                 $motor = \App\Models\Motor::find($data['id']);
-                if (!$motor || !$motor->available) {
+                if (!$motor || $motor->stock <= 0) {
                     return back()->with('error', 'Unit motor tidak tersedia untuk disewa.');
                 }
             } elseif ($data['type'] === 'joki') {
@@ -122,7 +178,7 @@ Route::middleware('auth')->group(function () {
                     ->where('item_type', 'motor')
                     ->whereIn('status', ['active', 'pending', 'paid'])
                     ->count();
-                
+
                 $activeJoki = \App\Models\Order::where('user_id', auth()->id())
                     ->where('item_type', 'joki')
                     ->whereIn('status', ['active', 'pending', 'paid'])
@@ -131,7 +187,7 @@ Route::middleware('auth')->group(function () {
                 if ($data['type'] === 'motor' && $activeMotor >= 2) {
                     return back()->with('error', 'Anda sudah memiliki 2 motor aktif. Selesaikan penyewaan sebelumnya untuk meminjam lagi.');
                 }
-                
+
                 if ($data['type'] === 'joki' && $activeJoki >= 2) {
                     return back()->with('error', 'Anda sudah memiliki 2 penjoki aktif. Selesaikan penyewaan sebelumnya untuk meminjam lagi.');
                 }
@@ -196,7 +252,7 @@ Route::middleware('auth')->group(function () {
             return back()->with('success', 'Item ditambahkan ke keranjang.');
         })->name('cart.add');
     });
-    
+
     // Admin routes
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin', function () {

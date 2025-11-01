@@ -15,6 +15,12 @@ class KycRequired
             return redirect()->route('login');
         }
 
+        // Check required profile fields
+        if (empty($user->phone) || empty($user->ktp) || empty($user->address)) {
+            return redirect()->route('profile')
+                ->with('error', 'Lengkapi nomor telepon, NIK/KTP, dan alamat terlebih dahulu.');
+        }
+
         $hasKtp = !empty($user->ktp_photo);
         $hasSim = !empty($user->simc_photo);
 
@@ -31,5 +37,3 @@ class KycRequired
         return $next($request);
     }
 }
-
-
